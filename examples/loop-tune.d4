@@ -1,0 +1,30 @@
+:A  440HZ;
+:D  A3/2*;
+
+:beats  480BPM/;
+
+:bar    6 beats;
+
+:loop   T bar MOD;
+:quaver 1 beats loop;
+
+:clav   (age, pitch --)
+    (tone) SAW SWAP 
+    (decay) 1 beats/ 1 SWAP - *
+;
+
+:a_tune
+    0 quaver ON IF A, clav THEN
+    2 beats quaver ON IF A clav THEN
+    3 beats quaver ON IF A### clav THEN
+    5 beats quaver ON IF A clav THEN
+;
+
+:d_tune
+    0 quaver ON IF D' clav THEN
+    2 beats quaver ON IF D clav THEN
+    3 beats quaver ON IF D### clav THEN
+    5 beats quaver ON IF A clav THEN
+;
+
+0 2 bar* T 4 bar* MOD ON IF a_tune ELSE d_tune THEN

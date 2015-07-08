@@ -1,0 +1,17 @@
+(
+    Adding harmonics to a sine wave makes an organ-like sound.
+)
+
+:organ 
+    DUP SIN SWAP
+    DUP 2* SIN ROT+ SWAP
+    DUP 3* SIN ROT+ SWAP
+    DUP 4* SIN ROT+ NIP
+    4/
+;
+
+:A  440HZ;
+
+A organ
+
+1S T > 2S T < AND IF A### organ THEN

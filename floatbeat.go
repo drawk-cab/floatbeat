@@ -14,20 +14,29 @@ import (
     "unicode/utf8"
 )
 
-const sampleRate = 44100
+const sampleRate = 11025
 
 const LETTER = 0
 const DIGIT = 1
 const OTHER = 2
 
-/* quantum length in seconds, will get a click when this reaches 1, default to 1 year(!) */
-const quantum float64 = 1.0 / (60 * 60 * 24 * 365)
+const NORMAL = 0
+const COLON = 1
+const DEF = 2
+const CONSTANT = 3
+const DELAY = 4
+const COMMENT = 5
+const IF_TRUE = 6
+const IF_FALSE = 7
+
+/* loop length in seconds, will get a click after this, default to 1 day(!) */
+const loop = 60 * 60 * 24
 
 var filename *string = flag.String("file", "", "Source file to read")  /* TODO: watch */
 var semitone = math.Pow(2, 1.0/12)
 
-var A = float64(440) / quantum
-var sec = float64(1) / quantum
+var SEC = float64(loop)
+var BPM = float64(loop / 60)
 
 func main() {
     flag.Parse()
@@ -80,7 +89,7 @@ func ScanForthWords(data []byte, atEOF bool) (advance int, token []byte, err err
 
     var seq int
     switch {
-        case unicode.IsLetter(r):
+        case unicode.IsLetter(r), r == '_':
             seq = LETTER
         case unicode.IsDigit(r), r == '.':
             seq = DIGIT
@@ -91,7 +100,8 @@ func ScanForthWords(data []byte, atEOF bool) (advance int, token []byte, err err
     // Scan until rune not matching current set.
     for width, i := 0, start; i < len(data); i += width {
         r, width = utf8.DecodeRune(data[i:])
-        if (unicode.IsLetter(r) != (seq == LETTER)) ||
+        if (seq == OTHER && i != start) ||
+           ((unicode.IsLetter(r) || r == '_') != (seq == LETTER)) ||
            ((unicode.IsDigit(r) || r == '.') != (seq == DIGIT)) ||
            (unicode.IsSpace(r)) {
                 return i, data[start:i], nil
@@ -107,22 +117,24 @@ func ScanForthWords(data []byte, atEOF bool) (advance int, token []byte, err err
 
 type Floatbeat struct {
     *portaudio.Stream
-    step, phase, clip float64
+    step, clip float64
+    iter int
     code []string
+    words map[string][]string
+    constants map[string][]float64
 }
 
 func newFloatbeat(in io.Reader, sampleRate float64, clip float64) *Floatbeat {
 
-    // Set phase = 0.5 s to avoid zeros everywhere during dummy run
-    s := &Floatbeat{nil, quantum / sampleRate, 0.1/sec, clip, nil}
+    // Set iter nonzero to avoid zeros everywhere during dummy run
+    s := &Floatbeat{nil, 1/ (loop * sampleRate), clip, 200, nil, nil, nil}
     fmt.Println("step is",s.step)
 
-    s.code = s.read_code(in)
+    s.code, s.words = s.read_code(in)
 
     fmt.Println("Dummy run produced",s.run(true))
-    s.phase = 1.1/sec
-    fmt.Println("Dummy run produced",s.run(true))
-    s.phase = 0
+
+    s.iter = 0
 
     var err error
     s.Stream, err = portaudio.OpenDefaultStream(0, 1, sampleRate, 0, s.processAudio)
@@ -130,94 +142,301 @@ func newFloatbeat(in io.Reader, sampleRate float64, clip float64) *Floatbeat {
     return s
 }
 
-func (f Floatbeat) read_code(in io.Reader) []string {
+
+func (f Floatbeat) read_code(in io.Reader) ([]string, map[string][]string) {
     scanner := bufio.NewScanner(in)
 
     scanner.Split(ScanForthWords)
 
-    var result []string
+    var code []string
+    var words map[string][]string
+    var new_word string
+
+    words = make(map[string][]string)
+
+    mode := []int{NORMAL}
 
     for scanner.Scan() {
-        word := scanner.Text()
-        result = append(result, word)
+        w := scanner.Text()
+        switch mode[len(mode)-1] {
+            case COLON:
+                new_word = w
+
+                _, exists := words[new_word]
+                if exists {
+                    panic("Word "+new_word+" has already been defined")
+                } else {                
+                    words[new_word] = nil
+                    mode[len(mode)-1] = DEF
+                }
+
+            case DEF:
+                switch w {
+                    case ";":
+                        mode = mode[:len(mode)-1]
+                    case "(":
+                        mode = append(mode, COMMENT)
+                    default:
+                        words[new_word] = append(words[new_word], w)
+                }
+
+            case COMMENT:
+                switch w {
+                    case "(":
+                        mode = append(mode, COMMENT)
+                    case ")":
+                        mode = mode[:len(mode)-1]
+                }
+
+            case NORMAL:
+                switch w {
+                    case ":":
+                        mode = append(mode, COLON)
+                    case "(":
+                        mode = append(mode, COMMENT)
+                    default:
+                        code = append(code, w)
+                }
+        }
     }
-    fmt.Println("Code:",result)
+    fmt.Println("Words:",words)
+    fmt.Println("Code:",code)
     chk(scanner.Err())
 
-    return result
-}
-
-func (f Floatbeat) sin(freq float64) float64 {
-    return math.Sin(2 * math.Pi * f.phase * freq)
-}
-
-func (f Floatbeat) saw(freq float64) float64 {
-    return math.Mod(f.phase * freq, 2) - 1
-}
-
-func (f Floatbeat) sq(freq float64) float64 {
-    return math.Copysign(1, math.Mod(f.phase * freq, 2) - 1)
+    return code, words
 }
 
 func (f *Floatbeat) run(debug bool) []float64 {
     var stack []float64
+    _, phase := math.Modf( float64(f.iter) * f.step )
+    return f.run_code(stack, phase, f.code, debug)
+}
+
+func (f *Floatbeat) run_code(stack []float64, phase float64, code []string, debug bool) []float64 {
     var pop float64
+    var mode = NORMAL
 
-    for _, w := range f.code {
+    if debug == true {
+        fmt.Println("==",code)
+    }
+
+    for _, w := range code {
         l := len(stack)-1
-        switch w {
-            case "t":
-                stack = append(stack, f.phase * sec)
+        switch mode {
+            case IF_FALSE:
+                if w == "THEN" || w == "ELSE" {
+                    mode = NORMAL
+                }
 
-            /* Forth words */
+            case NORMAL:
+                switch w {
 
-            case "frac":
-                stack[l] = math.Mod(stack[l],1)
+                    /* Forth words */
 
-            case "*":
-                pop, stack = stack[l], stack[:l]
-                stack[l-1] *= pop
-            case "/":
-                pop, stack = stack[l], stack[:l]
-                stack[l-1] /= pop
-            case "+":
-                pop, stack = stack[l], stack[:l]
-                stack[l-1] += pop
-            case "-":
-                pop, stack = stack[l], stack[:l]
-                stack[l-1] -= pop
-            case "max":
-                pop, stack = stack[l], stack[:l]
-                stack[l-1] = math.Max(pop,stack[l-1])
-            case "min":
-                pop, stack = stack[l], stack[:l]
-                stack[l-1] = math.Min(pop,stack[l-1])
+                    case "TRUE":
+                        stack = append(stack, 1)
+                    case "FALSE":
+                        stack = append(stack, 0)
 
-            /* musical words */
+                    case "IF":
+                        pop, stack = stack[l], stack[:l]
+                        if pop != 0 {
+                            // Test succeeded, carry on
+                        } else {
+                            mode = IF_FALSE
+                        }
+                    case "THEN":
+                        // Must have been executing an ELSE clause, do nothing
+                    case "ELSE":
+                        // Must have been executing an IF clause, skip to THEN
+                        mode = IF_FALSE
 
-            case "A":
-                stack = append(stack, A)
-            case "#":
-                stack[l] *= semitone
-            case "b":
-                stack[l] /= semitone
-            case "'":
-                stack[l] *= 2
-            case ",":
-                stack[l] /= 2
-            case "sin":
-                stack[l] = f.sin(stack[l])
-            case "saw":
-                stack[l] = f.saw(stack[l])
-            case "sq":
-                stack[l] = f.sq(stack[l])
-            default:
-                num, err := strconv.ParseFloat(w, 64); chk(err)
-                stack = append(stack, num)
+                    case "+":
+                        pop, stack = stack[l], stack[:l]
+                        stack[l-1] += pop
+                    case "-":
+                        pop, stack = stack[l], stack[:l]
+                        stack[l-1] -= pop
+                    case "*":
+                        pop, stack = stack[l], stack[:l]
+                        stack[l-1] *= pop
+                    case "/":
+                        pop, stack = stack[l], stack[:l]
+                        stack[l-1] /= pop
+                    case "MOD":
+                        pop, stack = stack[l], stack[:l]
+                        stack[l-1] = math.Mod( stack[l-1], pop )
+        
+                    case "=":
+                        if stack[l] == stack[l-1] {
+                            stack = append(stack, 1)
+                        } else {
+                            stack = append(stack, 0)
+                        }
+
+                    case ">":
+                        pop, stack = stack[l], stack[:l]
+                        if pop > stack[l-1] {
+                            stack[l-1] = 1
+                        } else {
+                            stack[l-1] = 0
+                        }
+
+                    case "<":
+                        pop, stack = stack[l], stack[:l]
+                        if pop < stack[l-1] {
+                            stack[l-1] = 1
+                        } else {
+                            stack[l-1] = 0
+                        }
+
+                    case "NOT":
+                        if stack[l] == 0 {
+                            stack[l] = 1
+                        } else {
+                            stack[l] = 0
+                        }
+
+                    case "AND":
+                        pop, stack = stack[l], stack[:l]
+                        if pop != 0 && stack[l-1] != 0 {
+                            stack[l-1] = 1
+                        } else {
+                            stack[l-1] = 0
+                        }
+
+                    case "OR":
+                        pop, stack = stack[l], stack[:l]
+                        if pop != 0 || stack[l-1] != 0 {
+                            stack[l-1] = 1
+                        } else {
+                            stack[l-1] = 0
+                        }
+
+                    case "DUP":
+                        stack = append(stack, stack[l])
+
+                    case "DDUP":
+                        stack = append(stack, stack[l-1], stack[l])
+
+                    case "OVER":
+                        stack = append(stack, stack[l-1])
+
+                    case "DROP":
+                        stack = stack[:l]
+
+                    case "NIP":
+                        pop, stack = stack[l], stack[:l]
+                        stack[l-1] = pop
+
+                    case "TUCK":
+                        stack = append(stack, stack[l])
+                        stack[l], stack[l-1] = stack[l-1], stack[l]
+
+                    case "SWAP":
+                        stack[l], stack[l-1] = stack[l-1], stack[l]
+
+                    case "ROT":
+                        stack[l], stack[l-1], stack[l-2] = stack[l-2], stack[l], stack[l-1]
+
+                    case "CONSTANT":
+                        mode = CONSTANT
+
+                    /* Useful words */
+        
+                    case "MAX":
+                        pop, stack = stack[l], stack[:l]
+                        stack[l-1] = math.Max(pop,stack[l-1])
+                    case "MIN":
+                        pop, stack = stack[l], stack[:l]
+                        stack[l-1] = math.Min(pop,stack[l-1])
+
+                    /* musical words */
+
+                    case "DELAY":
+                        mode = DELAY
+
+                    case "HZ":
+                        stack[l] *= SEC
+
+                    case "BPM":
+                        stack[l] *= BPM
+
+                    case "S":
+                        stack[l] /= SEC
+
+                    case "T":
+                        stack = append(stack, phase)
+
+                    case "ON":
+                        /* (time, length, base -- age, on (if on) OR off (if off) */
+                        var sched, dur, now float64
+                        sched, dur, now, stack = stack[l-2], stack[l-1], stack[l], stack[:l-1]
+                        age := now - sched
+                        if age > 0 && age < dur {
+                            stack[l-2] = age
+                            stack = append(stack, 1)
+                        } else {
+                            stack[l-2] = 0
+                        }
+
+                    /* intervals */
+
+                    case "#","SHARP":
+                        stack[l] *= semitone
+                    case "FLAT":
+                        stack[l] /= semitone
+                    case "'","HIGH":
+                        stack[l] *= 2
+                    case ",","LOW":
+                        stack[l] /= 2
+
+                    /* oscillators */
+
+                    case "SIN":
+                        stack[l] = math.Sin(stack[l] * phase * 2 * math.Pi)
+
+                    case "SAW":
+                        stack[l] = math.Mod(stack[l] * phase * 2, 2) - 1
+
+                    case "DIA":
+                        _, frac := math.Modf(stack[l] * phase)
+                        if frac < 0.5 {
+                            stack[l] = frac * 4 - 1
+                        } else {
+                            stack[l] = 3 - frac * 4
+                        }
+
+                    case "SQ":
+                        _, frac := math.Modf(stack[l] * phase)
+                        if frac < 0.5 {
+                            stack[l] = 1
+                        } else {
+                            stack[l] = -1
+                        }
+
+                    default:
+                        word_def, ok := f.words[w]
+                        if ok {
+                            if debug == true {
+                                fmt.Println(">> ",w)
+                            }
+                            stack = f.run_code(stack, phase, word_def, debug)
+                        } else {
+                            num, err := strconv.ParseFloat(w, 64)
+                            if err != nil {
+                                panic( "Unknown word: "+w )
+                            }
+                            stack = append(stack, num)
+                        }
+                }
         }
         if debug == true {
-            fmt.Println(w,"::",stack)
+            fmt.Println(w,"--",stack)
         }
+    }
+    if debug == true {
+        fmt.Println("<<",stack)
     }
     return stack
 }
@@ -238,7 +457,7 @@ func (f *Floatbeat) processAudio(out [][]float32) {
             fmt.Println("clip", f.clip)
         }
         out[0][i] = float32(r / f.clip)
-        _, f.phase = math.Modf(f.phase + f.step)
+        f.iter += 1
     }
 }
 
