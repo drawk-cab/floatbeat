@@ -1,0 +1,4 @@
+:A 440HZ;
+
+10HZ 4HZ SIN * A + TR
+

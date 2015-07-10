@@ -1,11 +1,11 @@
 ( 
+    From http://www.phy.mtu.edu/~suits/scales.html :
+
     The "Just Scale", sometimes referred to as "harmonic tuning" or "Helmholtz's scale",
     occurs naturally as a result of the overtone series for simple systems such as
     vibrating strings or air columns.  All the notes in the scale are related by rational
     numbers.  Just tuning is often used by ensembles, such as for choral or orchestra works,
     as the players match pitch with each other "by ear."
-
-    See http://www.phy.mtu.edu/~suits/scales.html for more information.
 )
 
 : A     440HZ   ;
@@ -22,5 +22,5 @@
 : Bb    C5/9*   ;
 : B     C8/15*  ;
 
-C SQ E SQ G SQ
+C TR E TR G TR
 
