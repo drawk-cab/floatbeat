@@ -1,0 +1,24 @@
+8 6HZ beats
+
+FROM
+A TR. E LOW TR. A bass.,
+,
+A' TR. E TR.,
+,
+B TR.,
+G TR. E bass.,
+,
+D TR.
+CHOOSE
+
+(definitions)
+
+:A 220 HZ;
+:G A FLAT FLAT;
+:B A##;
+:D B###;
+:E D##;
+
+:beats 1 DMOD ROT MOD;
+:bass LOW LOW SIN;
+

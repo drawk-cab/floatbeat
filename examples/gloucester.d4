@@ -1,0 +1,18 @@
+:A 440 HZ;
+
+:G A FLAT FLAT;
+:B A##;
+:C B#;
+:D C##;
+:E D##;
+:F E#;
+
+8 HZ 1 DMOD 64 MOD
+
+FROM
+
+G,,G',,G',,D,B,C,B,C,D,E,G',F#,E,D,B,G,B,E,D,C,B,A,B,C,A,G,F# LOW,E LOW,D LOW
+G,,G',,G',,D,B,C,B,C,D,E,G',F#,E,D,B,G,E,C,A,F# LOW,G,,B,,G,,D LOW,,
+
+CHOOSE TR .
+
