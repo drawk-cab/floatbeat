@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<style type="text/css">
+html {
+        height: 100%;
+}
+body  {
+        height: 100%;
+        padding: 0.5cm;
+        margin: 0;
+        background-color: black;
+        color: #0d0;
+}
+
+textarea    {
+        border: none;
+        font-size: 0.7cm;
+        font-family: Georgia, serif;
+        background-color: #222;
+        color: #def;
+        height: 100%;
+        width: 100%;
+}
+
+#comms  {
+        position: fixed;
+        bottom: 1cm;
+        right: 1cm;
+        font-size: 0.5cm;
+        text-align: right;
+        font-family: monospace;
+        color: #4F4;
+}
+
+</style>
+<script>
+        var serversocket = new WebSocket("ws://192.168.0.2:8080/ws");
+        var last_message = '?';
+ 
+        serversocket.onopen = senddata;
+ 
+        // Write message on receive
+        serversocket.onmessage = function(e) {
+            if (e.data != last_message) {
+                last_message = e.data
+                document.getElementById('comms').innerHTML += e.data + "<br>";
+            }
+        };
+ 
+        function senddata() {
+                var data = document.getElementById('sendtext').value;
+                serversocket.send(data);
+        }
+ 
+</script>
+</head>
+ 
+<body>
+        <textarea id="sendtext" onkeyup="senddata()">
+A SIN.
+
+:A 440HZ;
+        </textarea>
+        <div id="comms">FLOATBEAT v1.0<br></div>
+</body>
+</html>

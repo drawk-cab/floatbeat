@@ -1,4 +1,4 @@
 :A 440HZ;
 
-10HZ 4HZ SIN * A + TR
+10HZ 4HZ SQ * A + SIN
 

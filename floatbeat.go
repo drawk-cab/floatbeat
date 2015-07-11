@@ -3,17 +3,100 @@ package main
 import (
     "code.google.com/p/portaudio-go/portaudio"
     "github.com/colourcountry/d4"
-    "time"
+    "github.com/gorilla/websocket"
+    "net/http"
     "fmt"
     "flag"
     "os"
     "bufio"
+    "bytes"
     "io"
 )
 
 const sampleRate = 22050
 
 var filename *string = flag.String("file", "", "Source file to read")  /* TODO: watch */
+
+var LIVE *Floatbeat
+
+func chk(err error) {
+    if err != nil {
+        panic(err)
+    }
+}
+
+type Floatbeat struct {
+    d4.Machine
+    *portaudio.Stream
+}
+
+func newFloatbeat(in io.Reader, sampleRate float64) *Floatbeat {
+
+    m, err := d4.NewMachine(in, sampleRate, 10.0)
+    chk(err)
+
+    s := &Floatbeat{m, nil}
+
+    s.Stream, err = portaudio.OpenDefaultStream(0, 1, sampleRate, 0, s.processAudio)
+    chk(err)
+
+    return s
+}
+
+func (f *Floatbeat) setMachine(m d4.Machine) {
+    f.Machine = m
+}
+
+func (f *Floatbeat) processAudio(out [][]float32) {
+    //fmt.Println("Need",len(out[0]),"bytes from",f.Machine)
+    err := f.Machine.Fill32(out[0])
+    chk(err)
+}
+
+var upgrader = websocket.Upgrader{
+    ReadBufferSize:  1024,
+    WriteBufferSize: 1024,
+}
+
+func print_binary(s []byte) {
+  fmt.Printf("Received b:");
+  for n := 0;n < len(s);n++ {
+    fmt.Printf("%d,",s[n]);
+  }
+  fmt.Printf("\n");
+}
+
+func wsHandler(w http.ResponseWriter, r *http.Request) {
+    conn, err := upgrader.Upgrade(w, r, nil)
+    if err != nil {
+        //log.Println(err)
+        return
+    }
+ 
+    for {
+        messageType, p, err := conn.ReadMessage()
+        if err != nil {
+            return
+        }
+ 
+        m, err := d4.CloneMachine(bytes.NewReader(p), LIVE.Machine)
+ 
+        if err == nil {
+            _, err = m.Run()
+
+            if err == nil {
+                //fmt.Println("Installing %s",m)
+                LIVE.setMachine(m)
+                _ = conn.WriteMessage(messageType, []byte("OK"));
+            } else {
+                _ = conn.WriteMessage(messageType, []byte(fmt.Sprintf("%s", err)));
+            }
+        } else {
+            _ = conn.WriteMessage(messageType, []byte(fmt.Sprintf("%s", err)));
+        }
+    }
+}
+
 
 func main() {
     flag.Parse()
@@ -31,40 +114,15 @@ func main() {
         in = bufio.NewReader( os.Stdin )    
     }
 
-    s := newFloatbeat(in,sampleRate)
+    LIVE = newFloatbeat(in,sampleRate)
 
-    defer s.Close()
-    chk(s.Start())
-    time.Sleep(5 * time.Second)
-    chk(s.Stop())
-}
+    defer LIVE.Close()
+    chk(LIVE.Start())
 
-
-type Floatbeat struct {
-    d4.Machine
-    *portaudio.Stream
-}
-
-func newFloatbeat(in io.Reader, sampleRate float64) *Floatbeat {
-
-    m, err := d4.NewMachine(in, sampleRate)
+    http.HandleFunc("/ws", wsHandler)
+    http.Handle("/", http.FileServer(http.Dir(".")))
+    err := http.ListenAndServe(":8080", nil)
     chk(err)
 
-    s := &Floatbeat{m, nil}
-
-    s.Stream, err = portaudio.OpenDefaultStream(0, 1, sampleRate, 0, s.processAudio)
-    chk(err)
-
-    return s
-}
-
-func (f *Floatbeat) processAudio(out [][]float32) {
-    err := f.Machine.Fill32(out[0])
-    chk(err)
-}
-
-func chk(err error) {
-    if err != nil {
-        panic(err)
-    }
+    chk(LIVE.Stop())
 }
