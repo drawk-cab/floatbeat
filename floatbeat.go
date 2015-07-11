@@ -10,10 +10,11 @@ import (
     "os"
     "bufio"
     "bytes"
+    "strings"
     "io"
 )
 
-const sampleRate = 22050
+const sampleRate = 11025
 
 var filename *string = flag.String("file", "", "Source file to read")  /* TODO: watch */
 
@@ -111,7 +112,7 @@ func main() {
         fmt.Println( "Opened file", *filename )
         in = bufio.NewReader( opened_file )
     } else {
-        in = bufio.NewReader( os.Stdin )    
+        in = strings.NewReader( "440HZ SIN." )
     }
 
     LIVE = newFloatbeat(in,sampleRate)
