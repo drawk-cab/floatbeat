@@ -1,4 +1,4 @@
-( Additive synth )
+( Lead synth with pulse width modulation )
 
 :: scale timing ;
 
@@ -18,14 +18,11 @@ choose
 (instruments)
 
     :Lead (freq -- SOUND)
-        2/ organ .
+        dup low tr 2*. pwm pulse.
     ;
 
 (oscillators)
 
-    :organ
-        dup sin swap
-        dup 3* sin 0.3* swap 
-        2* sin
-        + +
+    :pwm  (freq -- pcm)
+        2Hz sin 0.2* 0.3+
     ;

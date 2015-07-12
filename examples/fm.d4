@@ -1,0 +1,39 @@
+( Lead synth with FM modulation )
+
+:: scale timing ;
+
+8 5Hz beats
+
+from
+    (1) A Lead,
+    (2) A' Lead,
+    (3) E Lead,
+    (4) D' Lead,
+    (5) B Lead,
+    (6) E low Lead,
+    (7) G' Lead,
+    (8) D Lead
+choose
+
+(instruments)
+
+    :Lead (freq -- SOUND)
+        fm.
+    ;
+
+(oscillators)
+
+    ( 4-operator FM synth: 2  3  4 
+                           └──┼──┘
+                              1
+    )
+
+    :fm (freq -- pcm)
+
+            (m/c)           (ampl)
+        (4) 4.01  over* sin  0.2* swap
+        (3) 1     over* sin  0.1* swap
+        (2) 0.5   over* sin  0.9* swap
+        
+        + + + sin
+    ;

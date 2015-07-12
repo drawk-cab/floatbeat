@@ -1,4 +1,0 @@
-:A 440HZ;
-
-10HZ 4HZ SQ * A + SIN
-

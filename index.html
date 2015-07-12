@@ -20,6 +20,7 @@ textarea    {
         font-size: 0.5cm;
         line-height: 0.7cm;
         font-family: monospace;
+        font-weight: bold;
         background-color: #001;
         color: #def;
         height: 100%;
@@ -30,7 +31,7 @@ textarea    {
         position: fixed;
         bottom: 1cm;
         right: 1cm;
-        font-size: 0.5cm;
+        font-size: 0.3cm;
         text-align: right;
         font-family: monospace;
         color: #4F4;
@@ -42,13 +43,17 @@ textarea    {
         var last_message = '?';
  
         serversocket.onopen = senddata;
- 
+
         // Write message on receive
         serversocket.onmessage = function(e) {
             if (e.data != last_message) {
                 last_message = e.data
                 document.getElementById('comms').innerHTML += e.data + "<br>";
             }
+        };
+
+        serversocket.onclose = function(e) {
+            document.getElementById('comms').innerHTML += "Disconnected<br>";
         };
  
         function senddata() {
@@ -61,29 +66,36 @@ textarea    {
  
 <body>
         <textarea id="sendtext" onkeyup="senddata()">
-8 6HZ beats
+8 6Hz beats
 
-FROM
-A TR. E LOW TR. A bass.,
-,
-A' TR. E TR.,
-,
-B TR.,
-G TR. E bass.,
-,
-D TR.
-CHOOSE
+from
+    (1) A Lead E low Lead A Bass,
+    (2) ,
+    (3) A' Lead E Lead,
+    (4) ,
+    (5) B Lead,
+    (6) G low Lead E Bass,
+    (7) ,
+    (8) D Lead
+choose
 
-(definitions)
+(imports)
 
-:A 220 HZ;
-:G A FLAT FLAT;
-:B A##;
-:D B###;
-:E D##;
+::
+    scale  (A Bb B C Db D Eb E F Gb G Ab)
+    timing (beats)
+;
 
-:beats 1 DMOD ROT MOD;
-:bass LOW LOW SIN;
+(instruments)
+
+:Bass (freq -- SOUND)
+    low low sin.
+;
+
+:Lead (freq -- SOUND)
+    tr.
+;
+
         </textarea>
         <div id="comms">FLOATBEAT v1.0<br></div>
 </body>

@@ -8,19 +8,29 @@
     as the players match pitch with each other "by ear."
 )
 
-: A     440HZ   ;
+:: timing ;
 
-: C     A5/3*   ;
-: Db    C24/25* ;
-: D     C8/9*   ;
-: Eb    C5/6*   ;
-: E     C4/5*   ;
-: F     C3/4*   ;
-: Gb    C32/45* ;
-: G     C2/3*   ;
-: Ab    C5/8*   ;
-: Bb    C5/9*   ;
-: B     C8/15*  ;
+:ut [440 5/3*] ; (tonic is C)
 
-C TR E TR G TR
+:A     440 Hz;
+:C     [ut] Hz ;
+:Db    [ut 24/25*] Hz ;
+:D     [ut 8/9*] Hz   ;
+:Eb    [ut 5/6*] Hz   ;
+:E     [ut 4/5*] Hz   ;
+:F     [ut 3/4*] Hz   ;
+:Gb    [ut 32/45*] Hz ;
+:G     [ut 2/3*] Hz   ;
+:Ab    [ut 5/8*] Hz   ;
+:Bb    [ut 5/9*] Hz   ;
+:B     [ut 8/15*] Hz  ;
 
+7 1Hz beats
+from
+    C tr. E tr. G tr.,
+    ,
+    D tr. G tr. B tr.,
+    ,
+    E tr. G tr. C' tr.,
+    F tr. A tr. C' tr.,
+choose

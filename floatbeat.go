@@ -51,7 +51,9 @@ func (f *Floatbeat) setMachine(m d4.Machine) {
 func (f *Floatbeat) processAudio(out [][]float32) {
     //fmt.Println("Need",len(out[0]),"bytes from",f.Machine)
     err := f.Machine.Fill32(out[0])
-    chk(err)
+    if (err != nil) {
+        fmt.Println("Couldn't fill buffer:",err)
+    }
 }
 
 var upgrader = websocket.Upgrader{
