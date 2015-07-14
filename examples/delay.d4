@@ -1,0 +1,24 @@
+( Lead synth with delay )
+
+:: scale timing ;
+
+8 5Hz beats
+
+from
+    (1) A Lead,
+    (2) A' Lead,
+    (3) E Lead,
+    (4) D' Lead,
+    (5) B Lead,
+    (6) E low Lead,
+    (7) G' Lead,
+    (8) D Lead
+choose
+
+(instruments)
+
+    :Lead (freq -- SOUND)
+        low tr 2*dup. save lead_out! . 
+        lead_out 0.3s old 0.6*.
+        lead_out 0.6s old 0.3*.
+    ;
