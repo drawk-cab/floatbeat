@@ -33,7 +33,7 @@ type Floatbeat struct {
 
 func newFloatbeat(in io.Reader, sampleRate float64) *Floatbeat {
 
-    m, err := d4.NewMachine(in, sampleRate, 10.0)
+    m, err := d4.NewMachine(in, sampleRate, 10.0, IMPORTS)
     chk(err)
 
     s := &Floatbeat{m, nil}
@@ -50,7 +50,7 @@ func (f *Floatbeat) setMachine(m d4.Machine) {
 
 func (f *Floatbeat) processAudio(out [][]float32) {
     //fmt.Println("Need",len(out[0]),"bytes from",f.Machine)
-    err := f.Machine.Fill32(out[0])
+    err := f.Machine.Fill32(out[0], 1) // FIXME: multiple workers currently broken
     if (err != nil) {
         fmt.Println("Couldn't fill buffer:",err)
     }
