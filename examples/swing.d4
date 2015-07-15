@@ -1,0 +1,37 @@
+( Swung rhythm and simple decay )
+
+:swing_two (frac speed -- beat-age beat-number)
+    2* 2 dmod drop 2/
+    dup rot -
+    dup 0> if
+      nip 1
+    else
+      drop 0
+    then
+;
+
+:swing_three (frac1 frac2 speed -- beat-age beat-number)
+    3* 3 dmod drop 3/
+    dup rot -
+    dup 0> if
+      nip nip 2
+    else
+      drop dup rot -
+      dup 0> from
+        nip 0,
+        drop 1
+      choose
+    then
+;
+
+::scale divisions;
+
+4 72bpm divisions nip 3*
+
+0.36 0.58 72bpm swing_three rot+
+
+from A, C, E, A', E, D, C, D, E, G, B, G low choose saw
+1 rot- *.
+
+72bpm 4/ 1 mod A low low sin
+1 rot- * 2*.
