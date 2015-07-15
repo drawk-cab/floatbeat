@@ -1,9 +1,9 @@
 ( Additive synth )
 
-:: scale timing ;
+:: scale divisions ;
 
-8 5Hz beats
-
+8 5Hz divisions
+nip
 from
     (1) A Lead,
     (2) A' Lead,
@@ -18,14 +18,21 @@ choose
 (instruments)
 
     :Lead (freq -- SOUND)
-        2/ organ .
+        2/ organ & room.
     ;
 
 (oscillators)
 
-    :organ
+    :organ (freq -- pcm)
         dup sin swap
-        dup 3* sin 0.3* swap 
+        dup 3* sin 0.3* swap
         2* sin
         + +
     ;
+
+(filters)
+
+    :room (pcm -- pcm)
+        _delay 0.2s old 0.2* + dup keep _delay 0.5*
+    ;
+

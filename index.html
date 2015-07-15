@@ -70,27 +70,26 @@ textarea    {
  
 <body>
         <textarea id="sendtext" onkeyup="senddata()">
-8 6Hz beats
-
+8 6Hz divisions
 from
-    (1) A Lead E low Lead A Bass,
+    (1) A Lead E↓ Lead A Bass,
     (2) ,
     (3) A' Lead E Lead,
     (4) ,
     (5) B Lead,
-    (6) G low Lead E Bass,
+    (6) G↓ Lead E Bass,
     (7) ,
     (8) D Lead
 choose
 
-(imports)
+drop (age)
 
-::
-    scale  (A Bb B C Db D Eb E F Gb G Ab)
-    timing (beats)
+(imports) ::
+          scale     (defines: A Bb B C Db D Eb E F Gb G Ab)
+          divisions
 ;
 
-(instruments)
+(instruments) 
 
 :Bass (freq -- SOUND)
     low low sin.

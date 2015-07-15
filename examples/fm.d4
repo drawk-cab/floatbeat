@@ -1,9 +1,9 @@
 ( Lead synth with FM modulation )
 
-:: scale timing ;
+:: scale divisions ;
 
-8 5Hz beats
-
+8 5Hz divisions
+nip (age)
 from
     (1) A Lead,
     (2) A' Lead,

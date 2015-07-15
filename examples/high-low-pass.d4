@@ -1,0 +1,43 @@
+( High and low pass filters, also delay )
+
+:: scale divisions ;
+
+8 5Hz divisions
+nip
+from
+    (1) A Lead,
+    (2) A' Lead,
+    (3) E Lead,
+    (4) D' Lead,
+    (5) B Lead,
+    (6) E low Lead,
+    (7) G' Lead,
+    (8) D Lead
+choose
+
+(instruments)
+
+    :Lead (freq -- SOUND)
+        sq
+        dup 0.2 highpass
+        _delay 0.37s old 0.8* + dup keep _delay.
+        0.1 lowpass 2* .
+    ;
+
+(filters)
+
+    :lowpass (input alpha -- output)
+        swap _lowpass delta -
+        swap *
+        _lowpass delta +
+        dup keep _lowpass
+    ;
+
+    :highpass (input alpha -- output)
+        swap dup keep _highpass_in
+        _highpass_in delta -
+        _highpass_out delta +
+        * dup keep _highpass_out
+    ;
+
+

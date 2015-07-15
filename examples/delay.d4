@@ -1,9 +1,9 @@
-( Lead synth with delay )
+( Lead synth with single delay )
 
-:: scale timing ;
+:: scale divisions ;
 
-8 5Hz beats
-
+8 5Hz divisions
+nip (age)
 from
     (1) A Lead,
     (2) A' Lead,
@@ -18,7 +18,13 @@ choose
 (instruments)
 
     :Lead (freq -- SOUND)
-        low tr 2*dup. save lead_out! . 
-        lead_out 0.3s old 0.6*.
-        lead_out 0.6s old 0.3*.
+        low tr 2* & delay.
     ;
+
+(filters)
+
+    :delay (pcm -- pcm)
+        keep lead_out
+        lead_out 0.07s old
+    ;
+
