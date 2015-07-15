@@ -40,6 +40,7 @@ textarea    {
 </style>
 <script>
         var serversocket = new WebSocket("ws://192.168.0.2:8080/ws");
+        var last_sent = '';
         var last_message = '?';
  
         serversocket.onopen = senddata;
@@ -57,8 +58,11 @@ textarea    {
         };
  
         function senddata() {
-                var data = document.getElementById('sendtext').value;
+            var data = document.getElementById('sendtext').value;
+            if (data != last_sent) {
                 serversocket.send(data);
+                last_sent = data;
+            }
         }
  
 </script>

@@ -16,7 +16,7 @@ import (
 
 const sampleRate = 11025
 
-var filename *string = flag.String("file", "", "Source file to read")  /* TODO: watch */
+var filename *string = flag.String("file", "", "Source file to read") 
 
 var LIVE *Floatbeat
 
@@ -33,7 +33,7 @@ type Floatbeat struct {
 
 func newFloatbeat(in io.Reader, sampleRate float64) *Floatbeat {
 
-    m, err := d4.NewMachine(in, sampleRate, 10.0, IMPORTS, 1)
+    m, err := d4.NewMachine(in, sampleRate, 1.0, 10.0, IMPORTS, 1)
     chk(err)
 
     s := &Floatbeat{m, nil}
