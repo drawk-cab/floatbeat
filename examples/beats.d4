@@ -1,0 +1,51 @@
+( beats )
+
+1 clip
+4 96bpm 2* divisions
+
+from
+kick,
+tick,
+dup kick hat,
+tick
+choose
+
+
+(imports) ::
+          divisions
+;
+
+
+(instruments: age -- SOUND)
+
+:kick
+    dup 0.7< if
+        dup 0.7 swap- 0.7/
+        swap 2*
+        70 Hz
+        swap dup* 1 swap- 4* +
+        sin 1.2** .
+    else
+        drop
+    then
+;
+
+
+:hat
+    dup 0.5< if
+        0.43 swap-
+        noise* 3/.
+    else
+        drop
+    then
+;
+
+:tick
+    dup 0.1< if
+        0.1 swap-
+        noise* 5/.
+    else
+        drop
+    then
+;
+
