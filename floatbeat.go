@@ -5,11 +5,11 @@ import (
     "github.com/colourcountry/d4"
     "github.com/gorilla/websocket"
     "net/http"
+    "encoding/json"
     "fmt"
     "flag"
     "os"
     "bufio"
-    "bytes"
     "strings"
     "io"
 )
@@ -31,6 +31,13 @@ type Floatbeat struct {
     *portaudio.Stream
     *websocket.Conn
 }
+
+type Message struct {
+    Cmd string "cmd"
+    Body string "body"
+    Value float64 "value"
+}
+    
 
 func newFloatbeat(in io.Reader, sampleRate float64) *Floatbeat {
 
@@ -57,7 +64,11 @@ func (f *Floatbeat) processAudio(out [][]float32) {
     //fmt.Println("Need",len(out[0]),"bytes from",f.Machine)
     err := f.Machine.Fill32(out[0]) // FIXME: multiple workers currently broken
     if (err != nil) {
-        _ = f.Conn.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("%s", err)));
+        if (f.Conn != nil) {
+            _ = f.Conn.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("%s", err)));
+        } else {
+            fmt.Println(err)
+        }
     }
 }
 
@@ -84,24 +95,47 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
  
     for {
         messageType, p, err := conn.ReadMessage()
-        if err != nil {
-            return
+        //fmt.Println("Got message", string(p), messageType)
+        if err != nil || messageType != websocket.TextMessage {
+            continue
         }
- 
-        m, err := d4.CloneMachine(bytes.NewReader(p), LIVE.Machine)
- 
-        if err == nil && messageType == websocket.TextMessage {
-            _, err = m.Run()
 
-            if err == nil {
+        var msg Message
+        err = json.Unmarshal(p, &msg)
+        if err != nil {
+            _ = conn.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("JSON error: %s", err)));
+            continue
+        }
+
+        //fmt.Println("Got command",msg.Cmd,"body =",msg.Body,"value =",msg.Value)
+
+        switch msg.Cmd {
+            case "set":
+                err := LIVE.Machine.Set(msg.Body, msg.Value)
+                if err != nil {
+                    _ = conn.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("%s", err)));
+                    continue
+                }
+                
+            case "code":
+                m, err := d4.CloneMachine(strings.NewReader(msg.Body), LIVE.Machine)
+                if err != nil {
+                    _ = conn.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("%s", err)));
+                    continue
+                }
+
+                _, err = m.Run()
+                if err != nil {
+                    _ = conn.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("Not installing: %s", err)));
+                    continue
+                }
+
                 //fmt.Println("Installing %s",m)
                 LIVE.setMachine(m)
                 _ = conn.WriteMessage(websocket.TextMessage, []byte("OK"));
-            } else {
-                _ = conn.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("Not installing: %s", err)));
-            }
-        } else {
-            _ = conn.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("%s", err)));
+            default:
+                _ = conn.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("Read error: unknown command %s", msg.Cmd)));
+                continue
         }
     }
 }
@@ -120,7 +154,7 @@ func main() {
         fmt.Println( "Opened file", *filename )
         in = bufio.NewReader( opened_file )
     } else {
-        in = strings.NewReader( "440HZ SIN." )
+        in = strings.NewReader( "constant pad @ hz sin." )
     }
 
     LIVE = newFloatbeat(in,sampleRate)
@@ -128,7 +162,7 @@ func main() {
     defer LIVE.Stream.Close()
     chk(LIVE.Start())
 
-    http.HandleFunc("/ws", wsHandler)
+    http.HandleFunc("/control", wsHandler)
     http.Handle("/", http.FileServer(http.Dir(".")))
     err := http.ListenAndServe(":8080", nil)
     chk(err)

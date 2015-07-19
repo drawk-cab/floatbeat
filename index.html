@@ -9,7 +9,7 @@ html {
 
 body  {
         height: 100%;
-        border-left: 0.5cm solid #ddd;
+        border-left: 0.2cm solid #def;
         margin: 0;
         margin-left: 5%;
         padding: 0;
@@ -29,7 +29,7 @@ textarea    {
         color: #def;
         height: 100%;
         width: 92%;
-        z-index: -1;
+        z-index: 0;
         overflow-y: scroll;
         background-color: transparent;
 }
@@ -55,6 +55,15 @@ textarea:focus {
         line-height: 0.6cm;
 }
 
+#pad  {
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        background: linear-gradient(#445,#668);
+        width: 4%;
+        height: 100%;
+}
+
 #gradient  {
         position: fixed;
         width: 100%;
@@ -67,14 +76,14 @@ textarea:focus {
 
 </style>
 <script>
-        var serversocket = new WebSocket("ws://192.168.0.2:8080/ws");
+        var control_socket = new WebSocket("ws://192.168.0.2:8080/control");
         var last_sent = '';
         var last_message = '?';
  
-        serversocket.onopen = senddata;
+        control_socket.onopen = send_data;
 
         // Write message on receive
-        serversocket.onmessage = function(e) {
+        control_socket.onmessage = function(e) {
             if (e.data != last_message) {
                 last_message = e.data
                 var new_data = document.getElementById('comms').innerHTML + e.data + "\n";
@@ -85,23 +94,37 @@ textarea:focus {
             }
         };
 
-        serversocket.onclose = function(e) {
+        control_socket.onclose = function(e) {
             document.getElementById('comms').innerHTML += "Disconnected<br>";
         };
  
-        function senddata() {
+        function send_data(e) {
             var data = document.getElementById('sendtext').value;
+            data = '{"cmd":"code", "body":"'+data.replace(/\r|\n/g, ' ')+'"}';
             if (data != last_sent) {
-                serversocket.send(data);
+                control_socket.send(data);
                 last_sent = data;
             }
         }
- 
+
+        function set_pad(e) {
+            var data = e.pageY / e.target.scrollHeight;
+            data = '{"cmd":"set", "body":"PAD", "value":'+data+'}';
+            if (data != last_sent) {
+                control_socket.send(data);
+                last_sent = data;
+            }
+        }
+
+        function init() {
+            document.getElementById("sendtext").onkeyup = send_data;
+            document.getElementById("pad").onmousemove = set_pad;
+        } 
 </script>
 </head>
  
-<body>
-        <textarea id="sendtext" onkeyup="senddata()">
+<body onload="init()">
+        <textarea id="sendtext">
 8 6Hz divisions
 nip (age)
 from
@@ -208,5 +231,6 @@ choose
 <u>FLOATBEAT v1.1</u>
 </pre>
         <div id="gradient"></div>
+        <div id="pad" title="pad"></div>
 </body>
 </html>
