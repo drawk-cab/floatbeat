@@ -45,4 +45,21 @@ var IMPORTS = map[string]string{
         ;
     `,
 
+    "lowpass": `
+        :lowpass (input alpha -- output)
+            swap _lowpass delta -
+            swap *
+            _lowpass delta +
+            dup keep _lowpass
+        ;
+    `,
+
+    "highpass": `
+        :highpass (input alpha -- output)
+            swap dup keep _highpass_in
+            _highpass_in delta -
+            _highpass_out delta +
+            * dup keep _highpass_out
+        ;
+    `,
 }
