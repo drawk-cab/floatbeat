@@ -20,10 +20,10 @@ choose
 
 :kick
     dup 0.7< if
-        dup 0.7 swap- 0.7/
+        dup 0.7~ 0.7/
         swap 2*
         70 Hz
-        swap dup* 1 swap- 4* +
+        swap dup* 1~ 4* +
         sin 1.2** .
     else
         drop
@@ -33,7 +33,7 @@ choose
 
 :hat
     dup 0.5< if
-        0.43 swap-
+        0.43~
         noise* 3/.
     else
         drop
@@ -42,7 +42,7 @@ choose
 
 :tick
     dup 0.1< if
-        0.1 swap-
+        0.1~
         noise* 5/.
     else
         drop

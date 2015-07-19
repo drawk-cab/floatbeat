@@ -6,35 +6,63 @@
 html {
         height: 100%;
 }
+
 body  {
         height: 100%;
-        padding: 0.1cm;
+        border-left: 0.5cm solid #ddd;
         margin: 0;
+        margin-left: 5%;
+        padding: 0;
+        color: #d00;
         background-color: black;
-        color: #0d0;
+        overflow: hidden;
 }
 
 textarea    {
         border: none;
-        padding: 0.5cm;
+        outline: none;
+        margin: 0 3%;
         font-size: 0.5cm;
         line-height: 0.7cm;
         font-family: monospace;
         font-weight: bold;
-        background-color: #001;
         color: #def;
         height: 100%;
-        width: 100%;
+        width: 92%;
+        z-index: -1;
+        overflow-y: scroll;
+        background-color: transparent;
+}
+
+textarea:focus {
+        border: none;
+        outline: none;
 }
 
 #comms  {
         position: fixed;
-        bottom: 1cm;
-        right: 1cm;
-        font-size: 0.3cm;
+        bottom: -0.5cm;
+        right: 5%;
+        padding-right: 3%;
+        padding-bottom: 0.5cm;
+        font-size: 0.4cm;
         text-align: right;
         font-family: monospace;
-        color: #4F4;
+        background-color: #004;
+        color: #4f4;
+        width: 87%;
+        z-index: -3;
+        line-height: 0.6cm;
+}
+
+#gradient  {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        bottom: 0;
+        right: 0;
+        background: linear-gradient(black, transparent);
+        z-index: -2;
 }
 
 </style>
@@ -49,7 +77,11 @@ textarea    {
         serversocket.onmessage = function(e) {
             if (e.data != last_message) {
                 last_message = e.data
-                document.getElementById('comms').innerHTML += e.data + "<br>";
+                var new_data = document.getElementById('comms').innerHTML + e.data + "\n";
+                if (new_data.length > 5000) {
+                    new_data = new_data.substr(new_data.length-5000);
+                }
+                document.getElementById('comms').innerHTML = new_data;
             }
         };
 
@@ -99,6 +131,82 @@ choose
 ;
 
         </textarea>
-        <div id="comms">FLOATBEAT v1.0<br></div>
+        <pre id="comms">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<u>FLOATBEAT v1.1</u>
+</pre>
+        <div id="gradient"></div>
 </body>
 </html>

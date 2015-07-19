@@ -29,6 +29,7 @@ func chk(err error) {
 type Floatbeat struct {
     d4.Machine
     *portaudio.Stream
+    *websocket.Conn
 }
 
 func newFloatbeat(in io.Reader, sampleRate float64) *Floatbeat {
@@ -36,7 +37,7 @@ func newFloatbeat(in io.Reader, sampleRate float64) *Floatbeat {
     m, err := d4.NewMachine(in, sampleRate, 1.0, 10.0, IMPORTS, 1)
     chk(err)
 
-    s := &Floatbeat{m, nil}
+    s := &Floatbeat{m, nil, nil}
 
     s.Stream, err = portaudio.OpenDefaultStream(0, 1, sampleRate, 0, s.processAudio)
     chk(err)
@@ -48,11 +49,15 @@ func (f *Floatbeat) setMachine(m d4.Machine) {
     f.Machine = m
 }
 
+func (f *Floatbeat) setConn(c *websocket.Conn) {
+    f.Conn = c
+}
+
 func (f *Floatbeat) processAudio(out [][]float32) {
     //fmt.Println("Need",len(out[0]),"bytes from",f.Machine)
     err := f.Machine.Fill32(out[0]) // FIXME: multiple workers currently broken
     if (err != nil) {
-        fmt.Println("Couldn't fill buffer:",err)
+        _ = f.Conn.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("%s", err)));
     }
 }
 
@@ -71,6 +76,7 @@ func print_binary(s []byte) {
 
 func wsHandler(w http.ResponseWriter, r *http.Request) {
     conn, err := upgrader.Upgrade(w, r, nil)
+    LIVE.setConn(conn)
     if err != nil {
         //log.Println(err)
         return
@@ -84,18 +90,18 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
  
         m, err := d4.CloneMachine(bytes.NewReader(p), LIVE.Machine)
  
-        if err == nil {
+        if err == nil && messageType == websocket.TextMessage {
             _, err = m.Run()
 
             if err == nil {
                 //fmt.Println("Installing %s",m)
                 LIVE.setMachine(m)
-                _ = conn.WriteMessage(messageType, []byte("OK"));
+                _ = conn.WriteMessage(websocket.TextMessage, []byte("OK"));
             } else {
-                _ = conn.WriteMessage(messageType, []byte(fmt.Sprintf("%s", err)));
+                _ = conn.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("Not installing: %s", err)));
             }
         } else {
-            _ = conn.WriteMessage(messageType, []byte(fmt.Sprintf("%s", err)));
+            _ = conn.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("%s", err)));
         }
     }
 }
@@ -119,7 +125,7 @@ func main() {
 
     LIVE = newFloatbeat(in,sampleRate)
 
-    defer LIVE.Close()
+    defer LIVE.Stream.Close()
     chk(LIVE.Start())
 
     http.HandleFunc("/ws", wsHandler)
