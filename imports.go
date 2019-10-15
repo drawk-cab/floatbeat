@@ -35,9 +35,26 @@ var IMPORTS = map[string]string{
         :B     [ut 8/15*] Hz  ;     :Ni B;
     `,
 
-    "divisions": `
-        :divisions (loop-count freq -- beat-age beat-num)
+    "g_just_scale": `
+        :ut [220 5/9*] ; (tonic is G)
 
+        :A     440 Hz ;
+        :G     [ut] Hz ;
+        :Ab    [ut 24/25*] Hz ;
+        :Bb    [ut 5/6*] Hz   ;
+        :B     [ut 4/5*] Hz   ;
+        :C     [ut 3/4*] Hz   ;
+        :Db    [ut 32/45*] Hz ;
+        :D     [ut 2/3*] Hz   ;
+        :Eb    [ut 5/8*] Hz   ;
+        :E     [ut 3/5*] Hz   ;
+        :F     [ut 5/9*] Hz   ;
+        :Gb    [ut 8/15*] Hz  ;
+    `,
+
+    "beat": `
+        :beat (loop-count freq -- beat-age beat-num)
+            T *    (-- loop-count float-beats)
             1 dmod (-- loop-count beat-age beat-count)
             rot    (-- beat-age beat-count loop-count)
             mod

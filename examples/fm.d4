@@ -1,9 +1,6 @@
-( Lead synth with FM modulation )
+( Lead synth with FM modulation ) ::scale beat;
 
-:: scale divisions ;
-
-8 5Hz divisions
-nip (age)
+8 5Hz beat
 from
     (1) A Lead,
     (2) A' Lead,
@@ -17,13 +14,14 @@ choose
 
 (instruments)
 
-    :Lead (freq -- SOUND)
+    :Lead (age freq -- SOUND)
+        nip
         fm.
     ;
 
 (oscillators)
 
-    ( 4-operator FM synth: 2  3  4 
+    ( 4-operator FM synth: 2  3  4
                            └──┼──┘
                               1
     )
@@ -31,9 +29,9 @@ choose
     :fm (freq -- pcm)
 
             (m/c)           (ampl)
-        (4) 4.01  over* sin  0.2* swap
-        (3) 1     over* sin  0.1* swap
-        (2) 0.5   over* sin  0.9* swap
-        
-        + + + sin
+        (4) 4.01  over* T sin  0.2* swap
+        (3) 1     over* T sin  0.1* swap
+        (2) 0.5   over* T sin  0.9* swap
+
+        + + + T sin
     ;

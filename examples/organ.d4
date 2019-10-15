@@ -1,8 +1,6 @@
-( Additive synth )
+( Additive synth ) ::scale beat;
 
-:: scale divisions ;
-
-8 5Hz divisions
+8 5Hz beat
 nip
 from
     (1) A Lead,

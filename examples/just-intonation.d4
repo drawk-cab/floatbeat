@@ -8,7 +8,7 @@
     :: c_just_scale ;
 )
 
-:: divisions ;
+::beat;
 
 :ut [440 5/3*] ; (tonic is C)
 
@@ -25,8 +25,7 @@
 :Bb    [ut 5/9*] Hz   ;
 :B     [ut 8/15*] Hz  ;
 
-7 1Hz divisions
-nip
+7 1Hz beat nip
 from
     C tr. E tr. G tr.,
     ,

@@ -1,7 +1,7 @@
 package main
 
 import (
-    "code.google.com/p/portaudio-go/portaudio"
+    "github.com/gordonklaus/portaudio"
     "github.com/colourcountry/d4"
     "github.com/gorilla/websocket"
     "net/http"
@@ -154,7 +154,7 @@ func main() {
         fmt.Println( "Opened file", *filename )
         in = bufio.NewReader( opened_file )
     } else {
-        in = strings.NewReader( "220 Hz sin." )
+        in = strings.NewReader( "440 Hz sin." )
     }
 
     LIVE = newFloatbeat(in,sampleRate)
@@ -164,7 +164,7 @@ func main() {
 
     http.HandleFunc("/control", wsHandler)
     http.Handle("/", http.FileServer(http.Dir(".")))
-    err := http.ListenAndServe(":8080", nil)
+    err := http.ListenAndServe(":8044", nil)
     chk(err)
 
     chk(LIVE.Stop())

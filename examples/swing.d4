@@ -1,4 +1,4 @@
-( Swung rhythm and simple decay )
+( Swung rhythm and simple decay ) ::g_just_scale beat;
 
 :swing_two (frac speed -- beat-age beat-number)
     2* 2 dmod drop 2/
@@ -24,14 +24,20 @@
     then
 ;
 
-::scale divisions;
+32      ( bars before everything loops )
+2*      ( two triplets per bar i.e. 6/8 )
 
-4 72bpm divisions nip 3*
+108bpm beat nip 3* 0.33 0.58 108bpm swing_three rot+
 
-0.36 0.58 72bpm swing_three rot+
-
-from A, C, E, A', E, D, C, D, E, G, B, G low choose saw
-1 rot- *.
-
-72bpm 4/ 1 mod A low low sin
-1 rot- * 2*.
+12 8 * ( length of following sequence )
+mod from
+     B, A, G, B, C, D, E, D, C, B, A, B,
+     C, B, C, A, D, C, B, C, A, G, D, C, 
+     B, A, G, B, C, D, E, D, C, B, A, B,
+     C, B, C, A, D, C, B, C, A, G, B, D,
+     G', F#, G', G', F#, G', E, F#, G', A', F#, D, 
+     D, C, B, C, D, E, A', A', G', F#, E, D,
+     B, A, G, B, C, D, E, D, C, B, A, B,
+     C, B, C, A, D, C, B, C, A, G, G, D, 
+choose
+tr 0.4 rot- *.

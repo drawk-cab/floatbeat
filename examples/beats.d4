@@ -1,7 +1,7 @@
-( beats )
+( beats ) ::beat;
 
 1 clip
-4 96bpm 2* divisions
+4 96bpm 2* beat
 
 from
 kick,
@@ -9,12 +9,6 @@ tick,
 dup kick hat,
 tick
 choose
-
-
-(imports) ::
-          divisions
-;
-
 
 (instruments: age -- SOUND)
 
@@ -24,7 +18,7 @@ choose
         swap 2*
         70 Hz
         swap dup* 1~ 4* +
-        sin 1.2** .
+        T sin 1.2** .
     else
         drop
     then
@@ -34,7 +28,7 @@ choose
 :hat
     dup 0.5< if
         0.43~
-        noise* 3/.
+        noise* 5/.
     else
         drop
     then
@@ -43,9 +37,8 @@ choose
 :tick
     dup 0.1< if
         0.1~
-        noise* 5/.
+        noise* 3/.
     else
         drop
     then
 ;
-
