@@ -1,36 +1,19 @@
-( Additive synth ) ::scale beat;
+( Additive synth )
 
-8 5Hz beat
-nip
-from
-    (1) A Lead,
-    (2) A' Lead,
-    (3) E Lead,
-    (4) D' Lead,
-    (5) B Lead,
-    (6) E low Lead,
-    (7) G' Lead,
-    (8) D Lead
-choose
+:: scale ticks env;
+
+8 280bpm ticks swap
+from G low, B', G, D, D', C, E, G choose
+organ.
 
 (instruments)
 
-    :Lead (freq -- SOUND)
-        2/ organ & room.
-    ;
-
-(oscillators)
-
-    :organ (freq -- pcm)
-        dup sin swap
-        dup 3* sin 0.3* swap
-        2* sin
-        + +
-    ;
-
-(filters)
-
-    :room (pcm -- pcm)
-        _delay 0.2s old 0.2* + dup keep _delay 0.5*
-    ;
-
+:organ (age freq -- signal)
+    2/
+    over swap             (-- age age freq)
+    ddup sin hide         (-- age signal-1 age freq)
+    ddup 3* sin 0.3* hide (-- age signal-1 signal-2 age freq)
+         2/ sin           (-- age signal-1 signal-2 signal-3)
+    + +
+    swap 0.001s 0.25s env
+;

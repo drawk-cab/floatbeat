@@ -1,37 +1,21 @@
-( Lead synth with FM modulation ) ::scale beat;
+( Lead synth with FM modulation )
+::scale ticks;
 
-8 5Hz beat
-from
-    (1) A Lead,
-    (2) A' Lead,
-    (3) E Lead,
-    (4) D' Lead,
-    (5) B Lead,
-    (6) E low Lead,
-    (7) G' Lead,
-    (8) D Lead
-choose
+8 280bpm ticks swap
+from G low, B', G, D, D', C, E, G choose
+fm.
 
-(instruments)
+( 4-operator FM synth: 2  3  4
+                       └──┼──┘
+                          1
+)
 
-    :Lead (age freq -- SOUND)
-        nip
-        fm.
-    ;
+:fm (age freq -- signal)
 
-(oscillators)
+        (m/c)           (ampl)
+    (4) 4.01  over* T sin  0.2* swap
+    (3) 1     over* T sin  0.1* swap
+    (2) 0.5   over* T sin  0.9* swap
 
-    ( 4-operator FM synth: 2  3  4
-                           └──┼──┘
-                              1
-    )
-
-    :fm (freq -- pcm)
-
-            (m/c)           (ampl)
-        (4) 4.01  over* T sin  0.2* swap
-        (3) 1     over* T sin  0.1* swap
-        (2) 0.5   over* T sin  0.9* swap
-
-        + + + T sin
-    ;
+    + + + sin
+;

@@ -52,15 +52,40 @@ var IMPORTS = map[string]string{
         :Gb    [ut 8/15*] Hz  ;
     `,
 
-    "beat": `
-        :beat (loop-count freq -- beat-age beat-num)
-            T *    (-- loop-count float-beats)
-            1 dmod (-- loop-count beat-age beat-count)
-            rot    (-- beat-age beat-count loop-count)
-            mod
+    "ticks": `
+:ticks (loop-length freq -- tick-in-loop tick-age)
+  dup T *    (-- loop-length freq time-in-ticks)
+  rot        (-- freq time-in-ticks loop-length)
+  swap       (-- freq loop-length time-in-ticks)
+  1 dmod     (-- freq loop-length tick-fraction tick-count)
+  rot        (-- freq tick-fraction tick-count loop-length)
+  mod        (-- freq tick-fraction tick-in-loop)
+  hide       (-- tick-in-loop freq tick-fraction)
+  \          (-- tick-in-loop tick-age)
+;`,
 
-        ;
-    `,
+    "env": `
+:env (signal note-age attack-time decay-time -- new-signal)
+  rot ddup                            (-- signal attack-time decay-time note-age decay-time note-age)
+  < if
+     (note-age) drop
+     (decay-time) drop
+     (attack-time) drop
+     (signal) drop
+     0
+  else
+  rot ddup                            (-- signal decay-time note-age attack-time note-age attack-time)
+  > if                                (-- signal decay-time note-age attack-time)
+     (note-age attack-time) -         (-- signal decay-time segment-age)
+     (decay-time segment-age) \ 1~    (-- signal amplitude)
+     (signal amplitude) *
+  else
+     rot                              (-- signal note-age attack-time decay-time)
+     (decay-time) drop
+     (note-age attack-time) /         (-- signal amplitude)
+     (signal amplitude) *
+  then then
+;`,
 
     "lowpass": `
         :lowpass (input alpha -- output)

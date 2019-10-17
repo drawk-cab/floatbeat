@@ -1,13 +1,11 @@
-( beats ) ::beat;
+( ticks ) ::ticks env;
 
-1 clip
-4 96bpm 2* beat
-
+4 96bpm 2* ticks
 from
-kick,
-tick,
-dup kick hat,
-tick
+hat,
+hat,
+hat,
+hat
 choose
 
 (instruments: age -- SOUND)
@@ -25,7 +23,7 @@ choose
 ;
 
 
-:hat
+:snare
     dup 0.5< if
         0.43~
         noise* 5/.
@@ -34,11 +32,6 @@ choose
     then
 ;
 
-:tick
-    dup 0.1< if
-        0.1~
-        noise* 3/.
-    else
-        drop
-    then
+:hat
+    440Hz T sin swap 0.01s 0.5s env.
 ;

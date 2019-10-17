@@ -1,14 +1,14 @@
-( 
+(
     https://en.wikipedia.org/wiki/Just_intonation
 
-    Just intonation (sometimes abbreviated as JI) or pure intonation is any musical tuning in which the frequencies of notes are 
+    Just intonation (sometimes abbreviated as JI) or pure intonation is any musical tuning in which the frequencies of notes are
     related by ratios of small whole numbers.
 
     Rather than defining it yourself, you can import this scale with
     :: c_just_scale ;
 )
 
-::beat;
+::ticks env;
 
 :ut [440 5/3*] ; (tonic is C)
 
@@ -25,12 +25,18 @@
 :Bb    [ut 5/9*] Hz   ;
 :B     [ut 8/15*] Hz  ;
 
-7 1Hz beat nip
+8 1Hz ticks
+keep _age
 from
-    C tr. E tr. G tr.,
-    ,
-    D tr. G tr. B tr.,
-    ,
-    E tr. G tr. C' tr.,
-    F tr. A tr. C' tr.,
+    C E G,
+    C E A,
+    D G B,
+    F A# D',
+    E A C',
+    F A C',
+    D F A,
+    A low C E,
 choose
+T tr _age@ 0.01s 1s env.
+T tr _age@ 0.15s 1s env.
+T tr _age@ 0.4s 1s env.

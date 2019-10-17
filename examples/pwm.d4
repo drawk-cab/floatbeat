@@ -1,26 +1,16 @@
-( Lead synth with pulse width modulation ) ::scale beat;
+( Lead synth with pulse width modulation )
 
-8 5Hz beat
-nip
-from
-    (1) A Lead,
-    (2) A' Lead,
-    (3) E Lead,
-    (4) D' Lead,
-    (5) B Lead,
-    (6) E low Lead,
-    (7) G' Lead,
-    (8) D Lead
-choose
+:: scale ticks env;
+
+8 280bpm ticks swap
+from G low, B', G, D, D', C, E, G choose
+pwm.
 
 (instruments)
 
-    :Lead (freq -- SOUND)
-        dup low tr 2*. pwm pulse.
-    ;
-
-(oscillators)
-
-    :pwm  (freq -- pcm)
-        10Hz sin 0.05* 0.25+
-    ;
+:pwm  (age freq -- signal)
+  over            (-- age freq age)
+  (age) 5Hz sin   (-- age freq lfo)
+  0.2* 0.25+      (-- age freq pulse-width)
+  pulse
+;
