@@ -1,22 +1,7 @@
-( Lead synth with single or infinite delay ) ::scale ticks;
+::scale ticks delay;
 
 8 280bpm ticks swap
 from G low, B', G, D, D', C, E, G choose
-synth.
-
-:synth (age freq -- signal)
-  *tr
-  single_delay
-;
-
-(filters)
-
-:single_delay (pcm -- pcm)
-    dup keep lead_out
-    lead_out 0.3s old 0.8* +
-;
-
-:infinite_delay (pcm -- pcm)
-    lead_out 0.3s old
-    + dup 0.8* keep lead_out
-;
+*tr
+0.3s 0.6 delay
+0.5*.

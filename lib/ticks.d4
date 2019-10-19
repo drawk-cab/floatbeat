@@ -1,0 +1,15 @@
+:ticks (loop-length freq -- tick-in-loop tick-age)
+  dup T *    (-- loop-length freq time-in-ticks)
+  fiddle     (-- freq loop-length time-in-ticks)
+  1 dmod     (-- freq loop-length tick-fraction tick-count)
+  rot        (-- freq tick-fraction tick-count loop-length)
+  mod        (-- freq tick-fraction tick-in-loop)
+  hide       (-- tick-in-loop freq tick-fraction)
+  \          (-- tick-in-loop tick-age)
+;
+
+(test)
+
+4 160bpm ticks swap from
+  220Hz, 330Hz, 440Hz, 660Hz
+choose *sin.

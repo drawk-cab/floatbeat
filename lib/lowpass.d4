@@ -1,0 +1,13 @@
+:lowpass (input alpha -- output)
+    swap _lowpass delta -
+    swap *
+    _lowpass delta +
+    dup keep _lowpass
+;
+
+(test)
+
+220Hz T*sq             (-- original)
+1Hz T*sin 0.5* 0.5+    (-- lfo)
+lowpass
+.

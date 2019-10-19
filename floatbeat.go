@@ -12,11 +12,13 @@ import (
     "bufio"
     "strings"
     "io"
+    "io/ioutil"
+    "log"
 )
 
 const sampleRate = 11025
 
-var filename *string = flag.String("file", "", "Source file to read") 
+var filename *string = flag.String("file", "", "Source file to read")
 
 var LIVE *Floatbeat
 
@@ -37,11 +39,23 @@ type Message struct {
     Body string "body"
     Value float64 "value"
 }
-    
+
+func findImport(name string) (string, error) {
+  name = strings.ToLower(name)
+
+  filename := "lib/"+name+".d4"
+  log.Printf("Reading imported file %s", filename)
+  s, err := ioutil.ReadFile(filename)
+  if err != nil {
+    return "", fmt.Errorf("Couldn't read import %s", name)
+  }
+
+  return string(s), nil
+}
 
 func newFloatbeat(in io.Reader, sampleRate float64) *Floatbeat {
 
-    m, err := d4.NewMachine(in, sampleRate, 1.0, 10.0, IMPORTS, 1)
+    m, err := d4.NewMachine(in, sampleRate, 1.0, 10.0, findImport, 1)
     chk(err)
 
     s := &Floatbeat{m, nil, nil}
@@ -92,7 +106,7 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
         //log.Println(err)
         return
     }
- 
+
     for {
         messageType, p, err := conn.ReadMessage()
         //fmt.Println("Got message", string(p), messageType)
@@ -116,7 +130,7 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
                     _ = conn.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("%s", err)));
                     continue
                 }
-                
+
             case "code":
                 m, err := d4.CloneMachine(strings.NewReader(msg.Body), LIVE.Machine)
                 if err != nil {
@@ -151,7 +165,7 @@ func main() {
 
     if *filename != "" {
         opened_file, err := os.OpenFile(*filename, os.O_RDONLY, 0755); chk(err)
-        fmt.Println( "Opened file", *filename )
+        log.Println( "Opened file", *filename )
         in = bufio.NewReader( opened_file )
     } else {
         in = strings.NewReader( "440 Hz t*sin." )

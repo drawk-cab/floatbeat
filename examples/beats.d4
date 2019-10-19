@@ -1,37 +1,62 @@
-( ticks ) ::ticks env;
+::scale delay ticks env lowpass;
 
-4 96bpm 2* ticks
+96bpm
+4* keep tempo
+
+8 tempo@ ticks swap
 from
-hat,
-hat,
-hat,
-hat
-choose
 
-(instruments: age -- SOUND)
+short_kick,
+tempo@1\+ short_kick,
+hat,
+drop 0,
+
+dup clap swap short_kick+,
+kick 2/,
+dup hat swap tempo@1\+ kick 2/+,
+drop 0,
+
+choose.
+
+8 tempo@ 3/ ticks swap
+from G low, B', G, D, D', C, E, G choose
+4/ *sq 10/
+0.3s 0.8 delay
+0.5*.
+
+
+(instruments: age -- signal)
 
 :kick
-    dup 0.7< if
-        dup 0.7~ 0.7/
-        swap 2*
-        70 Hz
-        swap dup* 1~ 4* +
-        T sin 1.2** .
-    else
-        drop
-    then
+    dup
+    60Hz over * swap           (-- age carrier age)
+    4Hz * sin 6*               (-- age carrier modulator)
+    +sin                       (-- age signal)
+    swap 0.01s 0.3s env
 ;
 
+:short_kick
+    dup
+    60Hz over * swap           (-- age carrier age)
+    4Hz * sin 6*               (-- age carrier modulator)
+    +sin                       (-- age signal)
+    over 0.01s 0.2s env swap
 
-:snare
-    dup 0.5< if
-        0.43~
-        noise* 5/.
-    else
-        drop
-    then
+    dup
+    120Hz over * swap           (-- age carrier age)
+    20Hz * sin 6*               (-- age carrier modulator)
+    +sin                       (-- age signal)
+    swap 0 0.05s env
+    +
+;
+
+:clap
+    noise
+    swap 0s 0.15s env
+    0.3 lowpass
 ;
 
 :hat
-    440Hz T sin swap 0.01s 0.5s env.
+    noise 8/
+    swap 0s 0.05s env
 ;

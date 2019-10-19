@@ -1,0 +1,20 @@
+::scale delay ticks env lowpass;
+
+96bpm keep tempo
+
+1 tempo@ ticks nip kick.
+
+:kick
+    dup
+    60Hz over * swap           (-- age carrier age)
+    4Hz * sin 6*               (-- age carrier modulator)
+    +sin                       (-- age signal)
+    over 0.01s 0.25s env swap
+
+    dup
+    120Hz over * swap           (-- age carrier age)
+    20Hz * sin 6*               (-- age carrier modulator)
+    +sin                        (-- age signal)
+    swap 0 0.05s env
+    +
+;

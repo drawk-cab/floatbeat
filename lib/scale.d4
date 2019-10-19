@@ -1,0 +1,21 @@
+(scale)
+
+:ut 220;
+:A  [ut]Hz;
+:Bb [ut ♯]Hz;
+:B  [ut ♯♯]Hz;
+:C  [ut ♯♯♯]Hz;
+:Db [ut ♯♯♯♯]Hz;
+:D  [ut ♯♯♯♯♯]Hz;
+:Eb [ut ♯♯♯♯♯♯]Hz;
+:E  [ut ↑ ♭♭♭♭♭]Hz;
+:F  [ut ↑ ♭♭♭♭]Hz;
+:Gb [ut ↑ ♭♭♭]Hz;
+:G  [ut ↑ ♭♭]Hz;
+:Ab [ut ↑ ♭]Hz;
+
+(test)
+
+C t*sin.
+E t*sin.
+G t*sin.

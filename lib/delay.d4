@@ -1,0 +1,19 @@
+:delay_single (signal time feedback -- signal)
+    fiddle over*                (-- time signal attenuated-signal)
+    keep _delay_signal          (-- time signal)
+    _delay_signal rot old       (-- signal old-signal)
+    +
+;
+
+:delay (signal time feedback -- signal)
+    _delay_signal rot old       (-- signal feedback old-signal)
+    rot+                        (-- feedback new-signal)
+    dup rot* keep _delay_signal
+;
+
+(test)
+
+T dup 1s mod 0.1s < if
+660Hz *sin else drop 0 then
+0.3s 0.5 delay_single
+.

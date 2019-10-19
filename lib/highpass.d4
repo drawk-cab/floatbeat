@@ -1,0 +1,13 @@
+:highpass (input alpha -- output)
+    swap dup keep _highpass_in
+    _highpass_in delta -
+    _highpass_out delta +
+    * dup keep _highpass_out
+;
+
+(test)
+
+220Hz T*sq             (-- original)
+1Hz T*sin 0.5* 0.5+    (-- lfo)
+highpass
+.
