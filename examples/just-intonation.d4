@@ -25,7 +25,7 @@
 :Bb    [ut 5/9*] Hz   ;
 :B     [ut 8/15*] Hz  ;
 
-8 1Hz ticks
+8 60bpm ticks
 keep _age
 from
     C E G,
@@ -37,6 +37,6 @@ from
     D F A,
     A low C E,
 choose
-T tr _age@ 0.01s 1s env.
-T tr _age@ 0.15s 1s env.
-T tr _age@ 0.4s 1s env.
+T *tr _age@ 0.01s 1s env.
+T *tr _age@ 0.15s 1s env.
+T *tr _age@ 0.4s 1s env.

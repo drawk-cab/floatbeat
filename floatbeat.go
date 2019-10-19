@@ -154,7 +154,7 @@ func main() {
         fmt.Println( "Opened file", *filename )
         in = bufio.NewReader( opened_file )
     } else {
-        in = strings.NewReader( "440 Hz sin." )
+        in = strings.NewReader( "440 Hz t*sin." )
     }
 
     LIVE = newFloatbeat(in,sampleRate)

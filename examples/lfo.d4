@@ -1,0 +1,13 @@
+( LFO )
+
+:: scale ticks;
+
+8 280bpm ticks swap
+from G low, B', G, D, D', C, E, G choose
+lfo.
+
+:lfo (age freq -- signal)
+    over * swap           (-- carrier age)
+    6Hz * sin             (-- carrier modulator)
+    +tr
+;

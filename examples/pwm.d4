@@ -9,8 +9,7 @@ pwm.
 (instruments)
 
 :pwm  (age freq -- signal)
-  over            (-- age freq age)
-  (age) 5Hz sin   (-- age freq lfo)
-  0.2* 0.25+      (-- age freq pulse-width)
-  pulse
+  over 6Hz * sin                   (-- age freq lfo)
+  0.2* 0.25+ hide                  (-- width age freq)
+  * pulse
 ;

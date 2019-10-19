@@ -9,11 +9,10 @@ organ.
 (instruments)
 
 :organ (age freq -- signal)
-    2/
     over swap             (-- age age freq)
-    ddup sin hide         (-- age signal-1 age freq)
-    ddup 3* sin 0.3* hide (-- age signal-1 signal-2 age freq)
-         2/ sin           (-- age signal-1 signal-2 signal-3)
+    ddup *sin hide         (-- age signal-1 age freq)
+    ddup 3* *sin 0.3* hide (-- age signal-1 signal-2 age freq)
+         3/ *sin           (-- age signal-1 signal-2 signal-3)
     + +
     swap 0.001s 0.25s env
 ;
