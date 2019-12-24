@@ -76,7 +76,7 @@ textarea:focus {
 
 </style>
 <script>
-        var control_socket = new WebSocket("ws://192.168.0.2:8080/control");
+        var control_socket = new WebSocket("ws://localhost:8044/control");
         var last_sent = '';
         var last_message = '?';
  
@@ -101,6 +101,7 @@ textarea:focus {
         function send_data(e) {
             var data = document.getElementById('sendtext').value;
             data = '{"cmd":"code", "body":"'+data.replace(/\r|\n/g, ' ')+'"}';
+            console.log(data);
             if (data != last_sent) {
                 control_socket.send(data);
                 last_sent = data;
@@ -125,34 +126,7 @@ textarea:focus {
  
 <body onload="init()">
         <textarea id="sendtext">
-8 6Hz divisions
-nip (age)
-from
-    (1) A Lead E↓ Lead A Bass,
-    (2) ,
-    (3) A' Lead E Lead,
-    (4) ,
-    (5) B Lead,
-    (6) G↓ Lead E Bass,
-    (7) ,
-    (8) D Lead
-choose
-
-(imports) ::
-          scale     (defines: A Bb B C Db D Eb E F Gb G Ab)
-          divisions
-;
-
-(instruments: freq -- SOUND)
-
-:Bass
-    low low sin.
-;
-
-:Lead
-    tr.
-;
-
+220Hz t*sin.
         </textarea>
         <pre id="comms">
 
