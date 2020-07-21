@@ -18,28 +18,15 @@
 ;   :standfirst [ a :Document; :markdown """Fun and fast live-coded music.""" ]
 
 ;   :description [ a :Document; :markdown """
-In the early 2010s there was a brief thing for [bytebeat][1] which was about writing extremely short
-programs which produced more-or-less musical output. There was one called [IBNIZ][2] which also produced
-visuals but had a more-or-less impenetrable syntax.
-It was weird and a bit magic. I think 'live coding' is still going on in some parts,
-mostly using javascript, but it seems to be less experimental and immediate than bytebeat was.
+In the early 2010s there was a brief thing for [bytebeat][1] which was about writing extremely short programs which produced more-or-less musical output. There was one called [IBNIZ][2] which also produced visuals but had a more-or-less impenetrable syntax. It was weird and a bit magic. I think 'live coding' is still going on in some parts, mostly using javascript, but it seems to be less experimental and immediate than bytebeat was.
 
-<aside><false-content src="http://id.colourcountry.net/external/youtube/aKMrBaXJvMs"></aside>
+<false-content src="http://id.colourcountry.net/external/youtube/aKMrBaXJvMs">
 
-Floatbeat is a sound and music generator for fast live coding in a Forth-like language I've
-called Diminished Forth, because it's missing a lot of the standard Forth words. And because
-it's a pun!
+Floatbeat is a sound and music generator for fast live coding in a Forth-like language I've called Diminished Forth, because it's missing a lot of the standard Forth words. And because it's a pun!
 
-Like the bytebeat programs it is based on a single time counter, which increments for every
-sample it needs to output, about 20,000 times a second.
-Floatbeat runs your program in full for each sample.
-This need for decent performance is why I chose Forth (and golang) for this project.
-Any value that gets 'printed' during execution (with the Forth word <code>.</code>)
-is sent to the sound library.
-Floatbeat expects the stack to be empty at the end, and rejects the program if it isn't.
+Like the bytebeat programs it is based on a single time counter, which increments for every sample it needs to output, about 20,000 times a second. Floatbeat runs your program in full for each sample. This need for decent performance is why I chose Forth (and golang) for this project. Any value that gets 'printed' during execution (with the Forth word `.`) is sent to the sound library. Floatbeat expects the stack to be empty at the end, and rejects the program if it isn't.
 
-When you run Floatbeat, you can supply a program as an input file, or you can connect to its
-web server. This uses web sockets to allow you to edit the program while the sound is being output.
+When you run Floatbeat, you can supply a program as an input file, or you can connect to its web server. This uses web sockets to allow you to edit the program while the sound is being output.
 
 Here's a sample d4 program which outputs a looping tune with a vibrato effect:
 
@@ -59,24 +46,16 @@ Here's a sample d4 program which outputs a looping tune with a vibrato effect:
 
 You can change the tune, sound or modulation with a few keystrokes and immediately hear the result.
 
-Floatbeat uses Gorilla for websockets and portaudio for sound. I've only tested it on
-my Linux machine. You need to build it yourself to run it, which involves setting up golang.
+Floatbeat uses Gorilla for websockets and portaudio for sound. I've only tested it on my Linux machine. You need to build it yourself to run it, which involves setting up golang.
 
 [1]: http://canonical.org/~kragen/bytebeat/
 [2]: http://id.colourcountry.net/world/ibniz
 """ ]
 
 ; :assessment [ a :Document; :markdown """
-In 2015 my computer was just about fast enough to produce simple sounds using Floatbeat.
-Although current hardware is of course faster, the program could still do with quite a bit of
-optimization.
+In 2015 my computer was just about fast enough to produce simple sounds using Floatbeat. Although current hardware is of course faster, the program could still do with quite a bit of optimization.
 
-Live coding in Forth is very easy to mess up. There's only one program buffer and it's unforgiving
-if you make a mistake. Too many or too few items on the stack will cause the program to be
-rejected, so floatbeat will continue running the last program that worked.
-At best this means you don't hear your changes; at worst you've left it in some weird but valid
-state that sounds bad. Maybe there should be multiple program buffers, that you can
-switch between during a performance.
+Live coding in Forth is very easy to mess up. There's only one program buffer and it's unforgiving if you make a mistake. Too many or too few items on the stack will cause the program to be rejected, so floatbeat will continue running the last program that worked. At best this means you don't hear your changes; at worst you've left it in some weird but valid state that sounds bad. Maybe there should be multiple program buffers, that you can switch between during a performance.
 """@en ]
 .
 
