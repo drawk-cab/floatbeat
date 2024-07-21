@@ -1,3 +1,10 @@
+This project was fun but there are now more competent implementations of the same idea
+
+* [Glicol](https://github.com/chaosprint/glicol)
+* [TidalCycles](https://github.com/tidalcycles/Tidal)
+
+etc. Use them instead!
+
 floatbeat
 =========
 
